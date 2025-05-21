@@ -1,67 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Jonathan’s Last Day – Nixie Countdown</title>
-  <link href="https://fonts.googleapis.com/css2?family=Nixie+One&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nixie+One&display=swap" rel="stylesheet" />
   <style>
     :root {
       --digit-color: #ff5e00;
       --glow-soft: rgba(255, 94, 0, 0.6);
       --glow-strong: rgba(255, 94, 0, 0.85);
-      --tube-bg: rgba(255, 140, 60, 0.1);
+      --tube-bg: rgba(255, 140, 60, 0.08);
+    }
+    * {
+      box-sizing: border-box;
     }
     body {
-      background: #0b0c10;
-      color: #eee;
-      font-family: Arial, sans-serif;
+      margin: 0;
+      min-height: 100dvh;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
+      background: #0b0c10;
+      color: #e6e6e6;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
     }
     h1 {
-      margin-bottom: 40px;
+      margin-bottom: 4rem;
       font-weight: 400;
       letter-spacing: 0.05em;
+      text-align: center;
     }
     .countdown {
       display: flex;
-      gap: 12px;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     .digit {
       position: relative;
-      font-family: 'Nixie One', monospace;
-      font-size: 120px;
+      font-family: "Nixie One", monospace;
+      font-size: clamp(52px, 15vw, 130px);
       line-height: 1;
+      padding: 0.45em 0.3em;
       color: var(--digit-color);
-      text-shadow: 0 0 8px var(--glow-soft),
-                   0 0 18px var(--glow-strong),
-                   0 0 32px var(--glow-strong);
-      padding: 24px 14px;
+      text-shadow: 0 0 0.5rem var(--glow-soft), 0 0 1.5rem var(--glow-strong), 0 0 2.5rem var(--glow-strong);
+      animation: flicker 2s infinite;
     }
     .digit::before {
-      content: '';
+      content: "";
       position: absolute;
       inset: 0;
-      border-radius: 8px;
-      background: radial-gradient(circle at 50% 15%, rgba(255, 200, 150, 0.25) 0%, transparent 40%), var(--tube-bg);
-      box-shadow: inset 0 0 10px var(--glow-soft), 0 0 6px var(--glow-soft), 0 0 12px var(--glow-strong);
+      border-radius: 0.4rem;
+      background: radial-gradient(circle at 50% 12%, rgba(255, 220, 180, 0.3) 0%, transparent 40%), var(--tube-bg);
+      box-shadow: inset 0 0 0.75rem var(--glow-soft), 0 0 0.25rem var(--glow-soft);
       z-index: -1;
+      filter: blur(0.3px);
     }
     .separator {
-      font-size: 120px;
+      font-size: clamp(52px, 15vw, 130px);
       color: var(--digit-color);
-      margin: 0 6px;
       animation: blink 1s steps(1, start) infinite;
     }
     @keyframes blink {
-      50% { opacity: 0; }
+      50% {
+        opacity: 0;
+      }
     }
-    @media (max-width: 600px) {
-      .digit, .separator { font-size: 60px; }
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 100% {
+        text-shadow: 0 0 0.5rem var(--glow-soft), 0 0 1.5rem var(--glow-strong), 0 0 2.5rem var(--glow-strong);
+      }
+      20%, 22% {
+        text-shadow: none;
+      }
     }
   </style>
 </head>
@@ -69,49 +83,75 @@
   <h1>Jonathan’s Last Day Countdown</h1>
   <div id="timer" class="countdown"></div>
 
+  <!-- Confetti library for the big moment -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
   <script>
-    (function () {
-      // Target: June 3, 2025 at 00:01 AM America/New_York
-      const target = new Date('2025-06-03T00:01:00-04:00');
-      const timer = document.getElementById('timer');
+    // Target: 3 June 2025 at 00:01 Eastern Time
+    const target = new Date("2025-06-03T00:01:00-04:00");
+    const timer = document.getElementById("timer");
 
-      function pad(n) { return n.toString().padStart(2, '0'); }
+    function pad(n) {
+      return n.toString().padStart(2, "0");
+    }
 
-      function buildDisplay(str) {
-        // str like "DDHHMMSS"
-        timer.innerHTML = '';
-        [...str].forEach((ch, i) => {
-          if (i && i % 2 === 0 && i < 6) {
-            const colon = document.createElement('span');
-            colon.className = 'separator';
-            colon.textContent = ':';
-            timer.appendChild(colon);
-          }
-          const span = document.createElement('span');
-          span.className = 'digit';
-          span.textContent = ch;
-          timer.appendChild(span);
-        });
-      }
-
-      function update() {
-        const now = new Date();
-        let diff = Math.max(0, target - now);
-        const sec = Math.floor(diff / 1000) % 60;
-        const min = Math.floor(diff / (1000 * 60)) % 60;
-        const hrs = Math.floor(diff / (1000 * 60 * 60)) % 24;
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const display = pad(days) + pad(hrs) + pad(min) + pad(sec);
-        buildDisplay(display);
-        if (diff <= 0) {
-          clearInterval(interval);
-          timer.textContent = "\uD83C\uDF89 It's Jonathan's Last Day! \uD83C\uDF89";
+    function buildDisplay(str) {
+      // str like "DDHHMMSS"
+      timer.innerHTML = "";
+      [...str].forEach((ch, i) => {
+        // Insert a blinking colon every two digits, including before seconds
+        if (i && i % 2 === 0 && i < 8) {
+          const colon = document.createElement("span");
+          colon.className = "separator";
+          colon.textContent = ":";
+          timer.appendChild(colon);
         }
-      }
+        const span = document.createElement("span");
+        span.className = "digit";
+        span.textContent = ch;
+        timer.appendChild(span);
+      });
+    }
 
-      update();
-      const interval = setInterval(update, 1000);
-    })();
+    function launchConfetti() {
+      const duration = 6 * 1000;
+      const end = Date.now() + duration;
+      (function frame() {
+        // Burst from two sides
+        confetti({
+          particleCount: 2,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 },
+        });
+        confetti({
+          particleCount: 2,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 },
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
+    }
+
+    function update() {
+      const now = new Date();
+      let diff = Math.max(0, target - now);
+      const sec = Math.floor(diff / 1000) % 60;
+      const min = Math.floor(diff / (1000 * 60)) % 60;
+      const hrs = Math.floor(diff / (1000 * 60 * 60)) % 24;
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const display = pad(days) + pad(hrs) + pad(min) + pad(sec);
+      buildDisplay(display);
+      if (diff <= 0) {
+        clearInterval(interval);
+        timer.textContent = "🎉 Jonathan's Last Day! 🎉";
+        launchConfetti();
+      }
+    }
+
+    update();
+    const interval = setInterval(update, 1000);
   </script>
 </body>
 </html>
