@@ -23,53 +23,54 @@
       background: #0b0c10;
       color: #e6e6e6;
       font-family: Arial, sans-serif;
-      overflow: hidden;
     }
     h1 {
-      margin-bottom: 3rem;
+      margin-bottom: 2.5rem;
       font-weight: 400;
       letter-spacing: 0.05em;
       text-align: center;
     }
     .countdown {
       display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
+      gap: 0.35rem;
+      flex-wrap: nowrap; /* keep in one row */
       justify-content: center;
       max-width: 100%;
-      padding: 0 1rem;
+      padding: 0 0.5rem;
+    }
+    .digit,
+    .separator {
+      font-family: "Nixie One", monospace;
+      font-size: clamp(28px, 8vw, 110px); /* smaller vw for phones */
+      line-height: 1;
+      color: var(--digit-color);
     }
     .digit {
       position: relative;
-      font-family: "Nixie One", monospace;
-      font-size: clamp(38px, 11vw, 110px);
-      line-height: 1;
-      padding: 0.3em 0.2em;
-      color: var(--digit-color);
-      text-shadow: 0 0 0.45rem var(--glow-soft), 0 0 1.4rem var(--glow-strong), 0 0 2.2rem var(--glow-strong);
+      padding: 0.2em 0.14em;
+      text-shadow: 0 0 0.5rem var(--glow-soft), 0 0 1.4rem var(--glow-strong), 0 0 2.3rem var(--glow-strong);
     }
     .digit::before {
       content: "";
       position: absolute;
       inset: 0;
       border-radius: 0.35rem;
-      background: radial-gradient(circle at 50% 12%, rgba(255, 220, 180, 0.28) 0%, transparent 40%), var(--tube-bg);
-      box-shadow: inset 0 0 0.65rem var(--glow-soft), 0 0 0.2rem var(--glow-soft);
+      background: radial-gradient(circle at 50% 12%, rgba(255, 220, 180, 0.25) 0%, transparent 40%), var(--tube-bg);
+      box-shadow: inset 0 0 0.55rem var(--glow-soft), 0 0 0.15rem var(--glow-soft);
       z-index: -1;
       filter: blur(0.25px);
     }
-    .separator {
-      font-size: clamp(38px, 11vw, 110px);
-      color: var(--digit-color);
-      animation: blink 1s steps(1, start) infinite;
-    }
+    .separator { animation: blink 1s steps(1,start) infinite; }
+
     @keyframes blink { 50% { opacity: 0; } }
-    /* Keyframe for brief off flick */
-    @keyframes tube-off {
-      0%   { opacity: 1; }
-      3%   { opacity: 0.25; }
-      6%   { opacity: 1; }
-      100% { opacity: 1; }
+
+    /* Softer, irregular tube flicker */
+    @keyframes tube-flicker {
+      0%, 100% { opacity: 1; }
+      2% { opacity: 0.92; }
+      4% { opacity: 1; }
+      7% { opacity: 0.95; }
+      9% { opacity: 1; }
     }
   </style>
 </head>
@@ -77,19 +78,17 @@
   <h1>Jonathan’s Last Day Countdown</h1>
   <div id="timer" class="countdown"></div>
 
-  <!-- Confetti library for the big moment -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-
   <script>
     const target = new Date("2025-06-03T00:01:00-04:00");
-    const timer = document.getElementById("timer");
+    const timer  = document.getElementById("timer");
 
-    function pad(n) { return n.toString().padStart(2, "0"); }
+    const pad = n => n.toString().padStart(2, "0");
 
     function applyRandomFlicker(el) {
-      const delay = (Math.random() * 8).toFixed(2);      // 0–8 s
-      const dur   = (2 + Math.random() * 4).toFixed(2);  // 2–6 s
-      el.style.animation = `tube-off ${dur}s ${delay}s infinite ease-in-out`;
+      const delay = (Math.random() * 10).toFixed(2);      // 0–10 s
+      const dur   = (5 + Math.random() * 4).toFixed(2);   // 5–9 s
+      el.style.animation = `tube-flicker ${dur}s ${delay}s infinite ease-in-out`;
     }
 
     function buildDisplay(str) {
@@ -101,42 +100,35 @@
           colon.textContent = ":";
           timer.appendChild(colon);
         }
-        const span = document.createElement("span");
-        span.className = "digit";
-        span.textContent = ch;
-        applyRandomFlicker(span);
-        timer.appendChild(span);
+        const d = document.createElement("span");
+        d.className = "digit";
+        d.textContent = ch;
+        applyRandomFlicker(d);
+        timer.appendChild(d);
       });
     }
 
-    function launchConfetti() {
-      const duration = 6_000;
-      const end = Date.now() + duration;
+    function confettiBurst() {
+      const end = Date.now() + 6_000;
       (function frame() {
-        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 } });
-        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 } });
+        confetti({ particleCount: 4, spread: 60, angle: 60, origin: { x: 0 } });
+        confetti({ particleCount: 4, spread: 60, angle: 120, origin: { x: 1 } });
         if (Date.now() < end) requestAnimationFrame(frame);
       })();
     }
 
     function update() {
-      const now = new Date();
-      const diff = Math.max(0, target - now);
-      const sec = Math.floor(diff / 1000) % 60;
-      const min = Math.floor(diff / (1000 * 60)) % 60;
-      const hrs = Math.floor(diff / (1000 * 60 * 60)) % 24;
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const display = pad(days) + pad(hrs) + pad(min) + pad(sec);
-      buildDisplay(display);
-      if (diff <= 0) {
-        clearInterval(interval);
-        timer.textContent = "🎉 Jonathan's Last Day! 🎉";
-        launchConfetti();
-      }
+      const diff = Math.max(0, target - new Date());
+      const sec  = Math.floor(diff / 1000) % 60;
+      const min  = Math.floor(diff / 6e4)  % 60;
+      const hrs  = Math.floor(diff / 36e5) % 24;
+      const days = Math.floor(diff / 864e5);
+      buildDisplay(pad(days) + pad(hrs) + pad(min) + pad(sec));
+      if (!diff) { clearInterval(int); timer.textContent = "🎉 Jonathan's Last Day! 🎉"; confettiBurst(); }
     }
 
     update();
-    const interval = setInterval(update, 1000);
+    const int = setInterval(update, 1000);
   </script>
 </body>
 </html>
