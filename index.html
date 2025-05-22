@@ -29,6 +29,14 @@
       font-weight: 400;
       letter-spacing: 0.05em;
       text-align: center;
+      line-height: 1.3;
+    }
+    h1 small {
+      display: block;
+      font-size: 0.6em;
+      opacity: 0.9;
+      margin-top: 0.5rem;
+      font-weight: 300;
     }
     .countdown {
       display: flex;
@@ -75,12 +83,12 @@
   </style>
 </head>
 <body>
-  <h1>Jonathan’s Last Day Countdown</h1>
+  <h1>Jonathan's Last Day<br><small>Monday, June 2nd, 2025</small></h1>
   <div id="timer" class="countdown"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
   <script>
-    const target = new Date("2025-06-03T00:01:00-04:00");
+    const target = new Date("2025-06-02T16:30:00-04:00");  // 4:30 PM Eastern
     const timer  = document.getElementById("timer");
 
     const pad = n => n.toString().padStart(2, "0");
