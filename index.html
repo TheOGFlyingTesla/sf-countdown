@@ -79,15 +79,53 @@
 
     @keyframes blink { 50% { opacity: 0; } }
 
-    /* More noticeable tube flicker */
-    @keyframes tube-flicker {
+    /* Realistic flicker patterns */
+    @keyframes tube-flicker-1 {
+      /* Quick dip with staccato recovery */
       0%, 100% { opacity: 1; }
-      5% { opacity: 0.85; }
-      10% { opacity: 0.95; }
+      8% { opacity: 0.7; }
+      12% { opacity: 0.85; }
+      15% { opacity: 0.65; }
+      18% { opacity: 0.9; }
       20% { opacity: 0.8; }
       25% { opacity: 1; }
-      30% { opacity: 0.9; }
+      30% { opacity: 0.95; }
+      32% { opacity: 0.7; }
       35% { opacity: 1; }
+      40% { opacity: 0.85; }
+      45% { opacity: 1; }
+    }
+    
+    @keyframes tube-flicker-2 {
+      /* Deeper dip with staggered recovery */
+      0%, 100% { opacity: 1; }
+      10% { opacity: 0.6; }
+      15% { opacity: 0.4; }
+      20% { opacity: 0.75; }
+      25% { opacity: 0.55; }
+      30% { opacity: 0.9; }
+      35% { opacity: 0.65; }
+      40% { opacity: 1; }
+      45% { opacity: 0.8; }
+      50% { opacity: 1; }
+      55% { opacity: 0.85; }
+      60% { opacity: 1; }
+    }
+    
+    @keyframes tube-flicker-3 {
+      /* Quick flicker with multiple stutter steps */
+      0%, 100% { opacity: 1; }
+      5% { opacity: 0.75; }
+      7% { opacity: 0.5; }
+      10% { opacity: 0.8; }
+      12% { opacity: 0.6; }
+      15% { opacity: 0.9; }
+      20% { opacity: 0.7; }
+      25% { opacity: 0.95; }
+      30% { opacity: 0.8; }
+      35% { opacity: 1; }
+      40% { opacity: 0.9; }
+      45% { opacity: 1; }
     }
   </style>
 </head>
@@ -103,9 +141,11 @@
     const pad = n => n.toString().padStart(2, "0");
 
     function applyRandomFlicker(el) {
+      const patterns = ['tube-flicker-1', 'tube-flicker-2', 'tube-flicker-3'];
+      const pattern = patterns[Math.floor(Math.random() * patterns.length)];
       const delay = (Math.random() * 10).toFixed(2);      // 0–10 s
-      const dur   = (5 + Math.random() * 4).toFixed(2);   // 5–9 s
-      el.style.animation = `tube-flicker ${dur}s ${delay}s infinite ease-in-out`;
+      const dur = (5 + Math.random() * 4).toFixed(2);     // 5–9 s
+      el.style.animation = `${pattern} ${dur}s ${delay}s infinite ease-in-out`;
     }
 
     function buildDisplay(str) {
