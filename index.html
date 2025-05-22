@@ -58,7 +58,11 @@
     }
     .digit {
       position: relative;
+      display: inline-flex;
+      justify-content: center;
+      min-width: 1.2em; /* Ensures consistent width for all digits */
       padding: 0.2em 0.14em;
+      text-align: center;
       text-shadow: 0 0 0.5rem var(--glow-soft), 0 0 1.4rem var(--glow-strong), 0 0 2.3rem var(--glow-strong);
     }
     .digit::before {
