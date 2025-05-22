@@ -72,18 +72,20 @@
 
     @keyframes blink { 50% { opacity: 0; } }
 
-    /* Softer, irregular tube flicker */
+    /* More noticeable tube flicker */
     @keyframes tube-flicker {
       0%, 100% { opacity: 1; }
-      2% { opacity: 0.92; }
-      4% { opacity: 1; }
-      7% { opacity: 0.95; }
-      9% { opacity: 1; }
+      5% { opacity: 0.85; }
+      10% { opacity: 0.95; }
+      20% { opacity: 0.8; }
+      25% { opacity: 1; }
+      30% { opacity: 0.9; }
+      35% { opacity: 1; }
     }
   </style>
 </head>
 <body>
-  <h1>Jonathan's Last Day<br><small>Monday, June 2nd, 2025</small></h1>
+  <h1>Jonathan's Final Day at State Farm<br><small>Logging off for good on Monday, June 2nd, 2025 at 4:30 PM</small></h1>
   <div id="timer" class="countdown"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
