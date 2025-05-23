@@ -82,18 +82,14 @@
     /* Realistic flicker patterns */
     @keyframes tube-flicker-1 {
       /* Quick dip with staccato recovery */
-      0%, 100% { opacity: 1; }
-      8% { opacity: 0.7; }
-      12% { opacity: 0.85; }
-      15% { opacity: 0.65; }
-      18% { opacity: 0.9; }
-      20% { opacity: 0.8; }
-      25% { opacity: 1; }
-      30% { opacity: 0.95; }
-      32% { opacity: 0.7; }
-      35% { opacity: 1; }
-      40% { opacity: 0.85; }
-      45% { opacity: 1; }
+      0%, 20% { opacity: 1; }
+      22% { opacity: 0.7; }
+      24% { opacity: 0.85; }
+      26% { opacity: 0.65; }
+      28% { opacity: 0.9; }
+      30% { opacity: 0.8; }
+      32% { opacity: 1; }
+      100% { opacity: 1; }
     }
     
     @keyframes tube-flicker-2 {
@@ -140,28 +136,43 @@
 
     const pad = n => n.toString().padStart(2, "0");
 
-    function applyRandomFlicker(el) {
-      const patterns = ['tube-flicker-1', 'tube-flicker-2', 'tube-flicker-3'];
+    function applyRandomFlicker(el, index) {
+      // Only use patterns 1 and 2 (index 0 and 1)
+      const patterns = ['tube-flicker-1', 'tube-flicker-2'];
       const pattern = patterns[Math.floor(Math.random() * patterns.length)];
-      const delay = (Math.random() * 10).toFixed(2);      // 0–10 s
-      const dur = (5 + Math.random() * 4).toFixed(2);     // 5–9 s
-      el.style.animation = `${pattern} ${dur}s ${delay}s infinite ease-in-out`;
+      
+      // 1.5s delay between each digit's flicker
+      const delay = (index * 1.5).toFixed(2);
+      const dur = '10s'; // Total duration for one complete cycle
+      
+      el.style.animation = `${pattern} ${dur} ${delay}s infinite ease-in-out`;
     }
 
     function buildDisplay(str) {
       timer.innerHTML = "";
-      [...str].forEach((ch, i) => {
-        if (i && i % 2 === 0 && i < 8) {
-          const colon = document.createElement("span");
-          colon.className = "separator";
-          colon.textContent = ":";
-          timer.appendChild(colon);
+      let digitIndex = 0;
+      
+      // Split into time parts (days, hours, minutes, seconds)
+      const parts = str.match(/\d+/g) || [];
+      
+      parts.forEach((part, i) => {
+        // Add each digit of the part
+        [...part].forEach(digit => {
+          const d = document.createElement("span");
+          d.className = "digit";
+          d.textContent = digit;
+          applyRandomFlicker(d, digitIndex);
+          timer.appendChild(d);
+          digitIndex++;
+        });
+        
+        // Add separator if not the last part
+        if (i < parts.length - 1) {
+          const sep = document.createElement("span");
+          sep.className = "separator";
+          sep.textContent = ":";
+          timer.appendChild(sep);
         }
-        const d = document.createElement("span");
-        d.className = "digit";
-        d.textContent = ch;
-        applyRandomFlicker(d);
-        timer.appendChild(d);
       });
     }
 
@@ -180,8 +191,18 @@
       const min  = Math.floor(diff / 6e4)  % 60;
       const hrs  = Math.floor(diff / 36e5) % 24;
       const days = Math.floor(diff / 864e5);
-      buildDisplay(pad(days) + pad(hrs) + pad(min) + pad(sec));
+      
+      // Format as days:hrs:min:sec with leading zeros
+      const timeString = [
+        pad(days),
+        pad(hrs),
+        pad(min),
+        pad(sec)
+      ].join(':');
+      
+      buildDisplay(timeString);
       if (!diff) { clearInterval(int); timer.textContent = "🎉 Jonathan's Last Day! 🎉"; confettiBurst(); }
+      requestAnimationFrame(update);
     }
 
     update();
