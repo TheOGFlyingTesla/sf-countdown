@@ -43,40 +43,46 @@
     }
     .countdown {
       display: flex;
-      flex-wrap: nowrap; /* keep in one row */
+      flex-wrap: nowrap;
       justify-content: center;
-      align-items: flex-end;
+      align-items: center;
       max-width: 100%;
-      padding: 0 0.5rem;
+      padding: 1rem 0.5rem;
       position: relative;
+      gap: 0.5rem;
     }
-    .digit,
-    .separator {
+    .digit {
       font-family: "Nixie One", monospace;
-      font-size: clamp(28px, 8vw, 110px); /* smaller vw for phones */
+      font-size: clamp(28px, 8vw, 110px);
       line-height: 1;
       color: var(--digit-color);
       position: relative;
+      display: inline-block;
+      min-width: 0.6em;
+      text-align: center;
+      margin: 0 -0.05em;
     }
     
     .time-group {
       display: flex;
       flex-direction: column;
       align-items: center;
-      margin: 0 0.5rem;
       position: relative;
+      margin: 0 -0.2rem;
+      padding: 0 0.3rem;
     }
     
     .time-label {
       font-family: Arial, sans-serif;
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       color: rgba(255, 180, 100, 0.7);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-top: 0.5rem;
+      margin-top: 0.3rem;
       text-shadow: 0 0 5px rgba(255, 120, 40, 0.4);
       opacity: 0.9;
       font-weight: 300;
+      white-space: nowrap;
     }
     
     .celebration {
@@ -110,25 +116,26 @@
       z-index: -1;
       filter: blur(0.25px);
     }
-    .separator { 
-      animation: blink 1.5s steps(1,start) infinite; 
-      margin: 0 0.5rem;
+    .separator {
+      animation: blink 1.5s steps(1,start) infinite;
       position: relative;
-      bottom: -0.2em;
+      align-self: flex-end;
+      margin: 0 0.2rem 0.5em;
+      height: 1em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     
     .separator::before {
       content: '';
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
+      display: block;
       width: 3px;
-      height: 0.7em;
+      height: 0.6em;
       background: linear-gradient(to bottom, 
         transparent 0%, 
-        var(--digit-color) 30%, 
-        var(--digit-color) 70%, 
+        var(--digit-color) 40%, 
+        var(--digit-color) 60%, 
         transparent 100%);
       border-radius: 2px;
       opacity: 0.5;
@@ -214,22 +221,28 @@
       let digitIndex = 0;
       
       // Split into time parts (days, hours, minutes, seconds)
-      const parts = str.match(/\d+/g) || [];
+      const timeValues = str.split(':');
       const labels = ['days', 'hours', 'minutes', 'seconds'];
       
-      parts.forEach((part, i) => {
+      timeValues.forEach((value, i) => {
         const group = document.createElement("div");
         group.className = "time-group";
         
+        // Create container for digits to ensure consistent width
+        const digitsContainer = document.createElement("div");
+        digitsContainer.style.display = 'flex';
+        
         // Add each digit of the part
-        [...part].forEach(digit => {
+        [...value].forEach(digit => {
           const d = document.createElement("span");
           d.className = "digit";
           d.textContent = digit;
           applyRandomFlicker(d, digitIndex);
-          group.appendChild(d);
+          digitsContainer.appendChild(d);
           digitIndex++;
         });
+        
+        group.appendChild(digitsContainer);
         
         // Add label
         const label = document.createElement("div");
@@ -240,7 +253,7 @@
         timer.appendChild(group);
         
         // Add separator if not the last part
-        if (i < parts.length - 1) {
+        if (i < timeValues.length - 1) {
           const sep = document.createElement("div");
           sep.className = "separator";
           sep.setAttribute('aria-hidden', 'true');
