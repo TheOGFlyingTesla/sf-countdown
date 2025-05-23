@@ -149,31 +149,27 @@
 
     /* Realistic flicker patterns */
     @keyframes tube-flicker-1 {
-      /* Quick dip with staccato recovery */
-      0%, 20% { opacity: 1; }
-      22% { opacity: 0.7; }
-      24% { opacity: 0.85; }
-      26% { opacity: 0.65; }
-      28% { opacity: 0.9; }
-      30% { opacity: 0.8; }
-      32% { opacity: 1; }
-      100% { opacity: 1; }
+      /* More pronounced flicker pattern */
+      0%, 30% { opacity: 1; text-shadow: 0 0 10px var(--glow-strong), 0 0 20px var(--glow-soft); }
+      32% { opacity: 0.4; text-shadow: 0 0 5px var(--glow-strong), 0 0 10px var(--glow-soft); }
+      34% { opacity: 0.9; text-shadow: 0 0 15px var(--glow-strong), 0 0 25px var(--glow-soft); }
+      36% { opacity: 0.3; text-shadow: 0 0 3px var(--glow-strong), 0 0 5px var(--glow-soft); }
+      38% { opacity: 0.8; text-shadow: 0 0 12px var(--glow-strong), 0 0 22px var(--glow-soft); }
+      40% { opacity: 0.5; text-shadow: 0 0 8px var(--glow-strong), 0 0 15px var(--glow-soft); }
+      42% { opacity: 1; text-shadow: 0 0 10px var(--glow-strong), 0 0 20px var(--glow-soft); }
+      100% { opacity: 1; text-shadow: 0 0 10px var(--glow-strong), 0 0 20px var(--glow-soft); }
     }
     
     @keyframes tube-flicker-2 {
-      /* Deeper dip with staggered recovery */
-      0%, 100% { opacity: 1; }
-      10% { opacity: 0.6; }
-      15% { opacity: 0.4; }
-      20% { opacity: 0.75; }
-      25% { opacity: 0.55; }
-      30% { opacity: 0.9; }
-      35% { opacity: 0.65; }
-      40% { opacity: 1; }
-      45% { opacity: 0.8; }
-      50% { opacity: 1; }
-      55% { opacity: 0.85; }
-      60% { opacity: 1; }
+      /* More dramatic flicker pattern */
+      0%, 25% { opacity: 1; text-shadow: 0 0 10px var(--glow-strong), 0 0 20px var(--glow-soft); }
+      27% { opacity: 0.3; text-shadow: 0 0 3px var(--glow-strong), 0 0 5px var(--glow-soft); }
+      29% { opacity: 0.8; text-shadow: 0 0 12px var(--glow-strong), 0 0 22px var(--glow-soft); }
+      31% { opacity: 0.2; text-shadow: 0 0 2px var(--glow-strong), 0 0 3px var(--glow-soft); }
+      33% { opacity: 0.9; text-shadow: 0 0 15px var(--glow-strong), 0 0 25px var(--glow-soft); }
+      35% { opacity: 0.4; text-shadow: 0 0 5px var(--glow-strong), 0 0 10px var(--glow-soft); }
+      37% { opacity: 1; text-shadow: 0 0 10px var(--glow-strong), 0 0 20px var(--glow-soft); }
+      100% { opacity: 1; text-shadow: 0 0 10px var(--glow-strong), 0 0 20px var(--glow-soft); }
     }
     
     @keyframes tube-flicker-3 {
@@ -213,7 +209,16 @@
       const delay = (index * 1.5).toFixed(2);
       const dur = '10s'; // Total duration for one complete cycle
       
+      // Reset any existing animations
+      el.style.animation = 'none';
+      // Force reflow to ensure the reset takes effect
+      void el.offsetHeight;
+      
+      // Apply the new animation with !important to ensure it overrides any existing styles
       el.style.animation = `${pattern} ${dur} ${delay}s infinite ease-in-out`;
+      
+      // Add a subtle glow effect that pulses with the flicker
+      el.style.textShadow = `0 0 10px var(--glow-strong), 0 0 20px var(--glow-soft)`;
     }
 
     function buildDisplay(str) {
@@ -231,12 +236,14 @@
         // Create container for digits to ensure consistent width
         const digitsContainer = document.createElement("div");
         digitsContainer.style.display = 'flex';
+        digitsContainer.style.position = 'relative';
         
         // Add each digit of the part
         [...value].forEach(digit => {
           const d = document.createElement("span");
           d.className = "digit";
           d.textContent = digit;
+          // Apply flicker with unique index for each digit
           applyRandomFlicker(d, digitIndex);
           digitsContainer.appendChild(d);
           digitIndex++;
