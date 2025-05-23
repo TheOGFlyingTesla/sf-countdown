@@ -43,11 +43,12 @@
     }
     .countdown {
       display: flex;
-      gap: 0.35rem;
       flex-wrap: nowrap; /* keep in one row */
       justify-content: center;
+      align-items: flex-end;
       max-width: 100%;
       padding: 0 0.5rem;
+      position: relative;
     }
     .digit,
     .separator {
@@ -55,6 +56,40 @@
       font-size: clamp(28px, 8vw, 110px); /* smaller vw for phones */
       line-height: 1;
       color: var(--digit-color);
+      position: relative;
+    }
+    
+    .time-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 0 0.5rem;
+      position: relative;
+    }
+    
+    .time-label {
+      font-family: Arial, sans-serif;
+      font-size: 0.7rem;
+      color: rgba(255, 180, 100, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 0.5rem;
+      text-shadow: 0 0 5px rgba(255, 120, 40, 0.4);
+      opacity: 0.9;
+      font-weight: 300;
+    }
+    
+    .celebration {
+      font-size: 1.8rem;
+      text-align: center;
+      margin-top: 2rem;
+      opacity: 0;
+      animation: fadeIn 2s forwards;
+      text-shadow: 0 0 10px rgba(255, 94, 0, 0.7);
+    }
+    
+    @keyframes fadeIn {
+      to { opacity: 1; }
     }
     .digit {
       position: relative;
@@ -75,9 +110,35 @@
       z-index: -1;
       filter: blur(0.25px);
     }
-    .separator { animation: blink 1s steps(1,start) infinite; }
+    .separator { 
+      animation: blink 1.5s steps(1,start) infinite; 
+      margin: 0 0.5rem;
+      position: relative;
+      bottom: -0.2em;
+    }
+    
+    .separator::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 3px;
+      height: 0.7em;
+      background: linear-gradient(to bottom, 
+        transparent 0%, 
+        var(--digit-color) 30%, 
+        var(--digit-color) 70%, 
+        transparent 100%);
+      border-radius: 2px;
+      opacity: 0.5;
+      box-shadow: 0 0 8px var(--glow-soft);
+    }
 
-    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes blink { 
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 0.3; }
+    }
 
     /* Realistic flicker patterns */
     @keyframes tube-flicker-1 {
@@ -154,23 +215,35 @@
       
       // Split into time parts (days, hours, minutes, seconds)
       const parts = str.match(/\d+/g) || [];
+      const labels = ['days', 'hours', 'minutes', 'seconds'];
       
       parts.forEach((part, i) => {
+        const group = document.createElement("div");
+        group.className = "time-group";
+        
         // Add each digit of the part
         [...part].forEach(digit => {
           const d = document.createElement("span");
           d.className = "digit";
           d.textContent = digit;
           applyRandomFlicker(d, digitIndex);
-          timer.appendChild(d);
+          group.appendChild(d);
           digitIndex++;
         });
         
+        // Add label
+        const label = document.createElement("div");
+        label.className = "time-label";
+        label.textContent = labels[i];
+        group.appendChild(label);
+        
+        timer.appendChild(group);
+        
         // Add separator if not the last part
         if (i < parts.length - 1) {
-          const sep = document.createElement("span");
+          const sep = document.createElement("div");
           sep.className = "separator";
-          sep.textContent = ":";
+          sep.setAttribute('aria-hidden', 'true');
           timer.appendChild(sep);
         }
       });
@@ -186,22 +259,37 @@
     }
 
     function update() {
-      const diff = Math.max(0, target - new Date());
+      const now = new Date();
+      const diff = Math.max(0, target - now);
       const sec  = Math.floor(diff / 1000) % 60;
       const min  = Math.floor(diff / 6e4)  % 60;
       const hrs  = Math.floor(diff / 36e5) % 24;
       const days = Math.floor(diff / 864e5);
       
-      // Format as days:hrs:min:sec with leading zeros
-      const timeString = [
-        pad(days),
+      // Create an array of time values with proper padding
+      const timeValues = [
+        days.toString(),
         pad(hrs),
         pad(min),
         pad(sec)
-      ].join(':');
+      ];
       
-      buildDisplay(timeString);
-      if (!diff) { clearInterval(int); timer.textContent = "🎉 Jonathan's Last Day! 🎉"; confettiBurst(); }
+      // Join with colons for the display
+      const timeString = timeValues.join(':');
+      
+      // Only update if the time has changed
+      if (timeString !== timer.getAttribute('data-time')) {
+        timer.setAttribute('data-time', timeString);
+        buildDisplay(timeString);
+      }
+      
+      if (diff <= 0) {
+        clearInterval(int);
+        timer.innerHTML = "<div class='celebration'>🎉 Jonathan's Last Day! 🎉</div>";
+        confettiBurst();
+        return;
+      }
+      
       requestAnimationFrame(update);
     }
 
